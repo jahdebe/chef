@@ -19,9 +19,15 @@ git_thing = ARGV.shift
 
 build_dir = Dir.pwd
 
+# TODO: figure out a better way to get inspec in here
+inspec_version = File.read(File.join(build_dir, "Gemfile")).match(/gem "inspec-core", (.*)$/)[1]
+
 env = {
-  "GEMFILE_MOD" => "gem 'chef', path: '#{build_dir}'; " \
-    "gem 'ohai', git: 'https://github.com/chef/ohai.git', branch: 'master'",
+  "GEMFILE_MOD" => <<~GEMFILE_MOD,
+    gem 'chef', path: '#{build_dir}'
+    gem 'inspec-core', #{inspec_version}
+    gem 'ohai', git: 'https://github.com/chef/ohai.git', branch: 'master'
+  GEMFILE_MOD
   "CHEF_LICENSE" => "accept-no-persist",
 }
 
