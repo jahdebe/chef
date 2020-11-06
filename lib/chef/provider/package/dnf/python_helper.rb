@@ -103,12 +103,11 @@ class Chef
             end
           end
 
-          # This deals with mangling version and arch properties to embed them into the name.  It attempts to construct a valid
-          # name-version.arch string.  Certain combinations may fail, and other are likely not bugs.  Where this function fails
-          # are the edge conditions where users MUST switch to no longer using the arch and version properties and convert their
-          # code to using the name string only (which should fully support any options on the command line).  The fact that it
-          # does not do everything your heart desires is not a bug.  Patches that turn it into spaghetti will not be accepted.
-          # You can try to submit a PR against this but it must be exceptionally clean, small, understandable and well-tested.
+          # This combines the name, version and arch properties into a single string to feed to the python helper.
+          #
+          # The intended use of this is that people should either use the three properties, or else embed the version and
+          # arch into the name properties.  Mix-and-match with an arch or a version in the name and the other in a property
+          # is not intended to work.  It definitely is not intended to work with a version in both or an arch in both.
           #
           # @return String
           # @api private

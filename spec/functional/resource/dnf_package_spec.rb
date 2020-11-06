@@ -91,7 +91,6 @@ describe Chef::Resource::DnfPackage, :requires_root, external: exclude_test do
         preinstall("chef_rpm-1.10-1.#{pkg_arch}.rpm")
         dnf_package.run_action(:install)
         expect(dnf_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q --queryformat '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.#{pkg_arch}$")
       end
 
       it "does not install twice" do
@@ -125,6 +124,37 @@ describe Chef::Resource::DnfPackage, :requires_root, external: exclude_test do
         dnf_package.run_action(:install)
         expect(dnf_package.updated_by_last_action?).to be false
         expect(shell_out("rpm -q --queryformat '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.i686$")
+      end
+    end
+
+    context "expanded idempotency checks with version variants" do
+      %w{1.10 1* 1.10-1 1*-1 1.10-* 1*-* 0:1.10 0:1* 0:1.10-1 0:1*-1 *:1.10-* *:1*-*}.each do |vstring|
+        it "installs  when #{vstring} is in the package_name" do
+          dnf_package.package_name("chef_rpm-#{vstring}")
+          dnf_package.run_action(:install)
+          expect(dnf_package.updated_by_last_action?).to be true
+        end
+
+        it "is idempotent when #{vstring} is in the package_name" do
+          preinstall("chef_rpm-1.10-1.#{pkg_arch}.rpm")
+          dnf_package.package_name("chef_rpm-#{vstring}")
+          dnf_package.run_action(:install)
+          expect(dnf_package.updated_by_last_action?).to be false
+        end
+
+        it "installs  when #{vstring} is in the version property" do
+          dnf_package.package_name("chef_rpm")
+          dnf_package.version(vstring)
+          expect(dnf_package.updated_by_last_action?).to be true
+        end
+
+        it "is idempotent when #{vstring} is in the version property" do
+          preinstall("chef_rpm-1.10-1.#{pkg_arch}.rpm")
+          dnf_package.package_name("chef_rpm")
+          dnf_package.version(vstring)
+          dnf_package.run_action(:install)
+          expect(dnf_package.updated_by_last_action?).to be false
+        end
       end
     end
 
