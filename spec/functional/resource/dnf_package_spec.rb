@@ -145,6 +145,7 @@ describe Chef::Resource::DnfPackage, :requires_root, external: exclude_test do
         it "installs  when #{vstring} is in the version property" do
           dnf_package.package_name("chef_rpm")
           dnf_package.version(vstring)
+          dnf_package.run_action(:install)
           expect(dnf_package.updated_by_last_action?).to be true
         end
 
